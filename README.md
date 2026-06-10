@@ -1000,322 +1000,430 @@ App2_GiaiToan/
 
 ---
 
-### 💻 Code Chính – App 2
+# 🧮 App 2 – Giải Toán & API
 
-#### Thêm dependency OkHttp vào `build.gradle`:
+> Ứng dụng Android có 3 Activity: Giới thiệu, Giải phương trình bậc 2 với gọi API, và WebView.  
+> Tương đương với bài tập đã làm trên MIT App Inventor nhưng viết bằng Java trên Android Studio.
+
+---
+
+
+## Tổng Quan
+
+| Activity | Chức năng | Kỹ thuật |
+|---|---|---|
+| **AboutActivity** | Màn hình giới thiệu + điều hướng | Intent, Button |
+| **GiaiToanActivity** | Giải PT bậc 2, gửi kết quả lên API | OkHttp POST, JSON, Thread |
+| **WebViewActivity** | Hiển thị trang web trong app | WebView, WebSettings |
+
+**Luồng điều hướng:**
+```
+AboutActivity (màn hình chính)
+    │
+    ├──[Nút Giải Toán]──► GiaiToanActivity
+    │                          └── Gọi API POST → https://k58kmt.tdh.io.vn/api
+    │
+    └──[Nút Xem Web]────► WebViewActivity
+                               └── Load https://k58kmt.tdh.io.vn?masv=k225480106030
+```
+
+---
+
+## Bước 1 – Tạo Project Mới
+
+### 1.1 Mở Android Studio → New Project
+
+```
+File → New → New Project
+```
+
+### 1.2 Chọn Template
+
+- Chọn **"Empty Views Activity"**
+- Click **Next**
+
+<img width="1145" height="835" alt="image" src="https://github.com/user-attachments/assets/657ba281-24d4-4102-9295-791759d90b91" />
+
+
+### 1.3 Cấu Hình Project
+
+| Trường | Giá trị |
+|---|---|
+| **Name** | `GiaiToanAPI` |
+| **Package name** | `com.example.giaitoanapi` |
+| **Save location** | Thư mục bạn muốn lưu |
+| **Language** | `Java` |
+| **Minimum SDK** | `API 24 ("Nougat"; Android 7.0)` |
+
+<img width="1145" height="835" alt="image" src="https://github.com/user-attachments/assets/9faf9343-df1b-4d02-b0e6-88f2515605d1" />
+
+- Click **Finish** → Chờ Gradle sync xong
+
+### 1.4 Đổi tên MainActivity thành AboutActivity
+
+Android Studio tạo sẵn `MainActivity.java`. Ta sẽ dùng nó làm `AboutActivity`:
+
+```
+Chuột phải vào MainActivity.java → Refactor → Rename
+→ Gõ: AboutActivity
+→ Click Refactor
+```
+
+<img width="1424" height="900" alt="image" src="https://github.com/user-attachments/assets/b2100f0e-4416-488a-a956-587acac441ae" />
+
+> Android Studio tự cập nhật tất cả chỗ tham chiếu, kể cả trong `AndroidManifest.xml`
+
+
+
+---
+
+## Bước 2 – Cấu Hình build.gradle
+
+Mở `app/build.gradle`, thêm dependency **OkHttp** để gọi API:
 
 ```gradle
+android {
+    namespace = "com.example.giaitoanapi"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.example.giaitoanapi"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
 dependencies {
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-    // ... các dependency khác
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // Thư viện gọi HTTP API
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 ```
 
-#### Khai báo quyền Internet trong `AndroidManifest.xml`:
+→ Click **"Sync Now"** sau khi lưu
+
+<img width="1532" height="934" alt="image" src="https://github.com/user-attachments/assets/5d1a1f76-9f04-4bee-8e76-7162c73895ca" />
+
+---
+
+## Bước 3 – Khai Báo Resources & Manifest
+
+### 3.1 `res/values/strings.xml`
 
 ```xml
-<uses-permission android:name="android.permission.INTERNET" />
+<resources>
+    <string name="app_name">Giải Toán API</string>
 
-<!-- Activity 3 cần cho WebView load URLs bên ngoài -->
-<application
-    android:usesCleartextTraffic="true"
-    ...>
-    <activity android:name=".AboutActivity"     android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN"/>
-            <category android:name="android.intent.category.LAUNCHER"/>
-        </intent-filter>
-    </activity>
-    <activity android:name=".GiaiToanActivity"  android:exported="false"/>
-    <activity android:name=".WebViewActivity"   android:exported="false"/>
-</application>
+    <!-- About Activity -->
+    <string name="about_title">Về Ứng Dụng</string>
+    <string name="about_description">Ứng dụng minh hoạ 3 Activity:\n• Giải phương trình bậc 2\n• Gửi kết quả lên API\n• Xem kết quả qua WebView</string>
+    <string name="btn_go_giai_toan">🧮 Đến Giải Toán</string>
+    <string name="btn_go_webview">🌐 Xem Web</string>
+    <string name="author_label">Sinh viên: [Họ tên] – [MSSV]</string>
+
+    <!-- GiaiToan Activity -->
+    <string name="giai_toan_title">Giải PT Bậc 2: ax² + bx + c = 0</string>
+    <string name="hint_a">Nhập hệ số a</string>
+    <string name="hint_b">Nhập hệ số b</string>
+    <string name="hint_c">Nhập hệ số c</string>
+    <string name="btn_giai">Giải Phương Trình</string>
+    <string name="ket_qua_title">Kết quả:</string>
+    <string name="api_status_title">Trạng thái API:</string>
+    <string name="error_empty">Vui lòng nhập đủ a, b, c</string>
+    <string name="error_invalid_number">Giá trị không hợp lệ</string>
+    <string name="api_sending">Đang gửi lên server...</string>
+    <string name="api_success">✅ Gửi thành công! ok=%1$d, stt=%1$d</string>
+    <string name="api_error">❌ Lỗi: %1$s</string>
+
+    <!-- WebView Activity -->
+    <string name="webview_title">Kết Quả Trên Web</string>
+    <string name="loading_web">Đang tải trang...</string>
+</resources>
 ```
+<img width="1590" height="951" alt="image" src="https://github.com/user-attachments/assets/20f161ac-a125-443f-a658-f8fbf4fc0197" />
 
-#### Activity 1 – About: `AboutActivity.java`
 
-```java
-package com.example.giaiphuongtrinh;
+### 3.2 `res/values/colors.xml`
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.Button;
-import androidx.appcompat.app.AppCompatActivity;
-
-public class AboutActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_about);
-
-        Button btnGiaiToan = findViewById(R.id.btnGiaiToan);
-        Button btnWebView  = findViewById(R.id.btnWebView);
-
-        // Chuyển sang Activity 2
-        btnGiaiToan.setOnClickListener(v -> {
-            startActivity(new Intent(this, GiaiToanActivity.class));
-        });
-
-        // Chuyển sang Activity 3
-        btnWebView.setOnClickListener(v -> {
-            startActivity(new Intent(this, WebViewActivity.class));
-        });
-    }
-}
+```xml
+<resources>
+    <color name="primary">#1565C0</color>
+    <color name="primary_dark">#003c8f</color>
+    <color name="accent">#FF6F00</color>
+    <color name="background">#F5F7FA</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#616161</color>
+    <color name="success_green">#2E7D32</color>
+    <color name="error_red">#C62828</color>
+    <color name="divider">#E0E0E0</color>
+</resources>
 ```
+<img width="1587" height="948" alt="image" src="https://github.com/user-attachments/assets/0a04601e-1551-435c-9e1a-da23db90d80e" />
 
-#### Activity 2 – Giải toán + Gọi API: `GiaiToanActivity.java`
+---
 
-```java
-package com.example.giaiphuongtrinh;
+## Bước 4 – Tạo 3 Activity
 
-import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import org.json.JSONObject;
-import java.io.IOException;
-import okhttp3.*;
+Ta đã có `AboutActivity` (đổi tên từ MainActivity). Cần tạo thêm 2 Activity nữa.
 
-public class GiaiToanActivity extends AppCompatActivity {
+### 4.1 Tạo GiaiToanActivity
 
-    private EditText etA, etB, etC;
-    private TextView tvKetQua;
-    private static final String MSSV = "YOUR_MSSV"; // ← Thay bằng MSSV của bạn
-    private static final String API_URL = "https://k58kmt.tdh.io.vn/api";
-    private final OkHttpClient client = new OkHttpClient();
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_giai_toan);
-
-        etA = findViewById(R.id.etA);
-        etB = findViewById(R.id.etB);
-        etC = findViewById(R.id.etC);
-        tvKetQua = findViewById(R.id.tvKetQua);
-        Button btnGiai = findViewById(R.id.btnGiai);
-
-        btnGiai.setOnClickListener(v -> giaiPhuongTrinh());
-    }
-
-    private void giaiPhuongTrinh() {
-        // Lấy input
-        String sA = etA.getText().toString().trim();
-        String sB = etB.getText().toString().trim();
-        String sC = etC.getText().toString().trim();
-
-        if (sA.isEmpty() || sB.isEmpty() || sC.isEmpty()) {
-            Toast.makeText(this, getString(R.string.error_empty_input),
-                Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        double a = Double.parseDouble(sA);
-        double b = Double.parseDouble(sB);
-        double c = Double.parseDouble(sC);
-
-        // Thuật toán giải phương trình bậc 2
-        String ketLuan;
-        double nghiem1 = 0, nghiem2 = 0;
-        String abcStr = "";
-
-        if (a == 0) {
-            // Phương trình bậc 1: bx + c = 0
-            if (b == 0) {
-                ketLuan = c == 0 ? "Vô số nghiệm" : "Vô nghiệm";
-            } else {
-                nghiem1 = -c / b;
-                ketLuan = "Một nghiệm";
-                abcStr = "x = " + nghiem1;
-            }
-        } else {
-            double delta = b * b - 4 * a * c;
-            if (delta < 0) {
-                ketLuan = "Vô nghiệm";
-                abcStr = "Δ = " + delta + " < 0";
-            } else if (delta == 0) {
-                nghiem1 = -b / (2 * a);
-                ketLuan = "Nghiệm kép";
-                abcStr = "x = " + nghiem1;
-            } else {
-                nghiem1 = (-b + Math.sqrt(delta)) / (2 * a);
-                nghiem2 = (-b - Math.sqrt(delta)) / (2 * a);
-                ketLuan = "Hai nghiệm phân biệt";
-                abcStr = String.format("x1 = %.4f, x2 = %.4f", nghiem1, nghiem2);
-            }
-        }
-
-        // Hiển thị kết quả
-        String displayText = String.format(
-            "Phương trình: %.2fx² + %.2fx + %.2f = 0\n%s\n%s",
-            a, b, c, ketLuan, abcStr
-        );
-        tvKetQua.setText(displayText);
-
-        // Gọi API gửi kết quả
-        final String finalKetLuan = ketLuan;
-        final String finalAbcStr  = abcStr;
-        final double finalNghiem  = nghiem1;
-        final double fa = a, fb = b, fc = c;
-
-        new Thread(() -> {
-            try {
-                // Tạo JSON body
-                JSONObject input  = new JSONObject();
-                input.put("a", fa);
-                input.put("b", fb);
-                input.put("c", fc);
-                input.put("name", "Giải PT bậc 2");
-
-                JSONObject output = new JSONObject();
-                output.put("ketluan", finalKetLuan);
-                output.put("abc", finalAbcStr);
-                output.put("nghiem", finalNghiem);
-
-                JSONObject body = new JSONObject();
-                body.put("app_by", MSSV);
-                body.put("input", input);
-                body.put("output", output);
-
-                // Gửi POST request
-                RequestBody requestBody = RequestBody.create(
-                    body.toString(),
-                    MediaType.parse("application/json; charset=utf-8")
-                );
-                Request request = new Request.Builder()
-                    .url(API_URL)
-                    .post(requestBody)
-                    .build();
-
-                try (Response response = client.newCall(request).execute()) {
-                    String responseBody = response.body().string();
-                    JSONObject result = new JSONObject(responseBody);
-                    int ok  = result.getInt("ok");
-                    int stt = result.getInt("stt");
-
-                    // Cập nhật UI trên main thread
-                    runOnUiThread(() -> {
-                        Toast.makeText(this,
-                            "Gửi thành công! ok=" + ok + ", stt=" + stt,
-                            Toast.LENGTH_LONG).show();
-                    });
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this,
-                    "Lỗi gửi API: " + e.getMessage(),
-                    Toast.LENGTH_SHORT).show());
-            }
-        }).start();
-    }
-}
 ```
+Chuột phải vào package gốc (com.example.giaitoanapi)
+→ New → Activity → Empty Views Activity
+→ Activity Name: GiaiToanActivity
+→ Layout Name: activity_giai_toan   (tự điền)
+→ Launcher Activity: ☐ BỎ CHỌN (không phải màn hình chính)
+→ Finish
+```
+<img width="1424" height="1001" alt="image" src="https://github.com/user-attachments/assets/6ef1c540-0f4b-46f1-9701-739778a4d48a" />
+<img width="1137" height="834" alt="image" src="https://github.com/user-attachments/assets/5ffe9aad-1217-49d9-ac8e-af4e91521ab8" />
 
-#### Activity 3 – WebView: `WebViewActivity.java`
+### 4.2 Tạo WebViewActivity
 
-```java
-package com.example.giaiphuongtrinh;
+```
+Chuột phải vào package gốc
+→ New → Activity → Empty Views Activity
+→ Activity Name: WebViewActivity
+→ Layout Name: activity_webview
+→ Launcher Activity: ☐ BỎ CHỌN
+→ Finish
+```
+<img width="1145" height="826" alt="image" src="https://github.com/user-attachments/assets/d70e62ed-10c2-486f-a6e5-8bb13e76212f" />
 
-import android.os.Bundle;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import androidx.appcompat.app.AppCompatActivity;
+### 4.3 Kết quả – cấu trúc project
 
-public class WebViewActivity extends AppCompatActivity {
-
-    private static final String MSSV = "YOUR_MSSV"; // ← Thay bằng MSSV của bạn
-    private WebView webView;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_webview);
-
-        webView = findViewById(R.id.webView);
-
-        // Cấu hình WebView
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);    // Bật JavaScript
-        webSettings.setDomStorageEnabled(true);    // Bật DOM Storage
-        webSettings.setLoadWithOverviewMode(true); // Fit to screen
-        webSettings.setUseWideViewPort(true);      // Viewport đầy đủ
-
-        // Mở link trong WebView, không mở browser ngoài
-        webView.setWebViewClient(new WebViewClient());
-
-        // Load URL với MSSV
-        String url = "https://k58kmt.tdh.io.vn?masv=" + MSSV;
-        webView.loadUrl(url);
-    }
-
-    // Xử lý nút Back: quay lại trang trước trong WebView thay vì thoát
-    @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
-    }
-}
+```
+app/src/main/
+├── java/com/example/giaitoanapi/
+│   ├── AboutActivity.java          ← Activity 1 (màn hình chính)
+│   ├── GiaiToanActivity.java       ← Activity 2
+│   └── WebViewActivity.java        ← Activity 3
+├── res/layout/
+│   ├── activity_about.xml
+│   ├── activity_giai_toan.xml
+│   └── activity_webview.xml
+└── AndroidManifest.xml             ← Đã tự thêm cả 3 activity
 ```
 
 ---
 
-### 🖼️ Hình Ảnh Minh Hoạ – App 2
+## Bước 5 – Thiết Kế Layout 3 Activity
 
-> *(Chèn ảnh chụp màn hình app vào đây)*
+### 5.1 Layout Activity 1 – `res/layout/activity_about.xml`
 
-| Activity 1 – About | Activity 2 – Giải toán | Activity 3 – WebView |
-|:---:|:---:|:---:|
-| ![About](screenshots/app2_about.png) | ![Giải toán](screenshots/app2_giai_toan.png) | ![WebView](screenshots/app2_webview.png) |
+> **Lưu ý:** File này ban đầu tên `activity_main.xml`, Android Studio đổi tên thành `activity_about.xml` khi bạn rename Activity, hoặc bạn tự đổi thủ công.
+<img width="1198" height="953" alt="image" src="https://github.com/user-attachments/assets/439faaa3-c587-4021-a32a-4d71cfa16ae2" />
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/16742901-8ed1-4050-8519-705f92f86fd2" />
+
+
+### 5.2 Layout Activity 2 – `res/layout/activity_giai_toan.xml`
+
+<img width="1731" height="973" alt="image" src="https://github.com/user-attachments/assets/344547ee-f723-49d6-a246-8669cee1cf5c" />
+
+### 5.3 Layout Activity 3 – `res/layout/activity_webview.xml`
+
+<img width="1728" height="962" alt="image" src="https://github.com/user-attachments/assets/e93cf09c-4ea4-4553-bd5c-38110b282aed" />
 
 ---
 
-## Hướng Dẫn Cài Đặt & Chạy
+## Bước 6 – Viết Code AboutActivity
 
-### Yêu cầu hệ thống
+Mở `AboutActivity.java`:
 
-| Công cụ | Phiên bản |
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8979a305-4551-4304-965c-7c4fddb9993d" />
+
+---
+
+## Bước 7 – Viết Code GiaiToanActivity
+
+Mở `GiaiToanActivity.java`:
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8616fe49-fc96-4a93-bbf5-0f598331147f" />
+
+**Giải thích luồng gọi API:**
+
+```
+[Main Thread] btnGiai.onClick()
+      │
+      ├── Tính toán → hiển thị kết quả lên UI
+      │
+      └── new Thread(() -> {         ← Background thread (không block UI)
+              Tạo JSON body
+              OkHttp POST → API
+              Nhận response JSON
+              runOnUiThread(() -> {   ← Trở về main thread để cập nhật UI
+                  tvApiStatus.setText(...)
+              });
+          }).start();
+```
+
+> **Tại sao dùng Thread?**  
+> Android không cho phép gọi mạng (network) trên main thread (UI thread) vì sẽ làm đơ app. Mọi tác vụ mạng phải chạy trên background thread, sau đó dùng `runOnUiThread()` để cập nhật UI.
+
+---
+
+## Bước 8 – Viết Code WebViewActivity
+
+Mở `WebViewActivity.java`:
+
+<img width="1919" height="1056" alt="image" src="https://github.com/user-attachments/assets/c4fa8a29-1ae0-4d9f-b59c-6da30eebcdab" />
+
+---
+
+## Bước 9 – Kiểm Tra AndroidManifest
+
+Mở `AndroidManifest.xml` và đảm bảo đúng như sau:
+
+<img width="1738" height="958" alt="image" src="https://github.com/user-attachments/assets/d51a852e-7eb0-4747-9881-00b50f846da0" />
+
+**Giải thích các thuộc tính quan trọng:**
+
+| Thuộc tính | Giá trị | Ý nghĩa |
+|---|---|---|
+| `exported="true"` | AboutActivity | Hệ thống có thể khởi động Activity này |
+| `exported="false"` | 2 Activity còn lại | Chỉ app nội bộ mới gọi được |
+| `parentActivityName` | `.AboutActivity` | Nút Back trên ActionBar về đâu |
+| `uses-permission INTERNET` | — | Bắt buộc để gọi API và load WebView |
+| `usesCleartextTraffic` | true | Cho phép HTTP (không chỉ HTTPS) |
+
+---
+
+## Bước 10 – Chạy & Kiểm Tra
+
+### 10.1 Kết nối thiết bị / khởi động Emulator
+
+```
+Tools → Device Manager
+→ Click ▶ bên cạnh thiết bị ảo để khởi động
+```
+
+Hoặc cắm thiết bị thật qua USB (đã bật Developer Options + USB Debugging).
+
+### 10.2 Build & Run
+
+```
+Click ▶ (Run) trên toolbar
+Hoặc: Shift + F10
+→ Chọn thiết bị → OK
+```
+
+<img width="1717" height="862" alt="image" src="https://github.com/user-attachments/assets/727c2474-25dc-4620-9a05-4227730e0628" />
+
+
+### 10.3 Test từng chức năng
+
+**Test Activity 1 – About:**
+```
+☐ App mở được, hiển thị màn hình About
+☐ Nút "Đến Giải Toán" → chuyển sang Activity 2
+☐ Nút "Xem Web" → chuyển sang Activity 3
+☐ Nút Back trên thiết bị hoạt động bình thường
+```
+<img width="1763" height="981" alt="image" src="https://github.com/user-attachments/assets/ca180f02-9f4b-45a1-90b6-3233728005cb" />
+
+**Test Activity 2 – Giải Toán:**
+```
+☐ Nhập a=1, b=5, c=6 → kết quả: x1=3.0, x2=2.0
+☐ Nhập a=1, b=2, c=5  → kết quả: Vô nghiệm (Δ < 0)
+☐ Nhập a=1, b=-2, c=1 → kết quả: Nghiệm kép x=1.0
+☐ Nhập a=0, b=2, c=4  → kết quả: Một nghiệm x=-2.0
+☐ Để trống → hiện thông báo "Vui lòng nhập đủ a, b, c"
+☐ Sau khi giải → trạng thái API hiện "Đang gửi..."
+☐ Vài giây sau → API trả về "✅ Thành công! ok=1, stt=XXXX"
+```
+<img width="372" height="579" alt="image" src="https://github.com/user-attachments/assets/8b5232bc-d227-4afe-bf21-ab52f9eab03d" />
+
+
+
+**Test Activity 3 – WebView:**
+```
+☐ Trang web load được (cần có Internet)
+☐ URL hiển thị đúng: https://k58kmt.tdh.io.vn?masv=MSSV_CỦA_BẠN
+☐ ProgressBar hiện khi đang load, ẩn khi xong
+☐ Nút Back thiết bị: nếu đã điều hướng trong web → goBack()
+☐ Nút Back trên ActionBar → về AboutActivity
+```
+
+
+
+### 10.4 Kiểm tra API bằng Log
+
+Mở **Logcat** trong Android Studio (Alt+6) để xem log:
+
+```
+Filter: tag = "API" hoặc search "GiaiToan"
+```
+
+---
+
+## Tổng Kết
+
+### Những gì đã làm được
+
+| Kỹ thuật | Áp dụng |
 |---|---|
-| Android Studio | Hedgehog 2023.1.1 trở lên |
-| JDK | 17+ |
-| Android SDK | API 24+ |
-| Gradle | 8.0+ |
+| **3 Activity** | Mỗi Activity một chức năng riêng biệt |
+| **Intent** | Điều hướng giữa các Activity |
+| **AndroidManifest** | Khai báo Activity, quyền Internet |
+| **OkHttp POST** | Gửi JSON lên server API |
+| **Background Thread** | Gọi mạng không block UI |
+| **runOnUiThread** | Cập nhật UI từ background thread |
+| **WebView** | Hiển thị trang web trong app |
+| **WebViewClient** | Xử lý loading, back navigation |
+| **Resources** | `@string`, `@color` – không hardcode |
+| **Event Handling** | `setOnClickListener` + Lambda |
 
-### Các bước chạy App 1
+### JSON gửi lên API
 
-```bash
-# 1. Clone repository
-git clone https://github.com/[username]/android-k58-[masv].git
-
-# 2. Mở Android Studio
-# File → Open → chọn thư mục App1_AmThucVietNam
-
-# 3. Sync Gradle
-# Click "Sync Now" khi Android Studio hỏi
-
-# 4. Kết nối thiết bị hoặc mở Emulator
-
-# 5. Run
-# Click nút Run ▶ hoặc Shift+F10
+```json
+{
+  "app_by": "2051012345",
+  "input": {
+    "a": 1,
+    "b": -5,
+    "c": 6,
+    "name": "Giải PT bậc 2 – 2051012345"
+  },
+  "output": {
+    "ketluan": "Hai nghiệm phân biệt",
+    "abc": "x₁ = 3.0000\nx₂ = 2.0000",
+    "nghiem": 3.0
+  }
+}
 ```
 
-### Các bước chạy App 2
+### Response nhận về
 
-```bash
-# 1. Mở thư mục App2_GiaiToan trong Android Studio
-
-# 2. Cập nhật MSSV của bạn trong:
-#    - GiaiToanActivity.java: private static final String MSSV = "YOUR_MSSV";
-#    - WebViewActivity.java:  private static final String MSSV = "YOUR_MSSV";
-
-# 3. Sync Gradle → Run
+```json
+{
+  "ok": 1,
+  "stt": 1234
+}
 ```
+
+---
+
+*App 2 hoàn thành – tương đương bài tập MIT App Inventor nhưng viết bằng Java trên Android Studio.*
+
 
 ---
 
@@ -1349,29 +1457,6 @@ App-AndroidStudio/
         └── res/
 ```
 
----
-
-## `.gitignore` (Bắt Buộc Có)
-
-```gitignore
-# Android Studio
-*.iml
-.gradle/
-.idea/
-local.properties
-captures/
-
-# Build outputs
-build/
-app/build/
-
-# OS
-.DS_Store
-Thumbs.db
-*.swp
-```
 
 ---
-
-*Tài liệu này được tạo như một phần của bài tập môn Lập Trình Ứng Dụng Di Động.*  
-*Mọi hình ảnh minh hoạ được chèn thủ công sau khi hoàn thiện app.*
+# The End
