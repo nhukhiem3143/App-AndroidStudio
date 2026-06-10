@@ -101,46 +101,39 @@
 ### 2. Vòng Đời Ứng Dụng Android
 
 **Vòng đời Activity (Activity Lifecycle):**
+```mermaid
+flowchart LR
 
-```
-           Người dùng mở app
-                  │
-                  ▼
-            ┌─────────────┐
-            │  onCreate() │  ◄── Khởi tạo UI, load data lần đầu
-            └──────┬──────┘
-                   │
-                   ▼
-            ┌─────────────┐
-            │  onStart()  │  ◄── Activity trở nên visible
-            └──────┬──────┘
-                   │
-                   ▼
-            ┌─────────────┐
-            │  onResume() │  ◄── Activity ở foreground, nhận input
-            └──────┬──────┘
-                   │
-          ┌────────┴────────┐
-          │   App đang chạy  │
-          └────────┬────────┘
-                   │ Bị che khuất / chuyển app
-                   ▼
-            ┌─────────────┐
-            │  onPause()  │  ◄── Lưu trạng thái tạm thời
-            └──────┬──────┘
-                   │ Không còn visible
-                   ▼
-            ┌─────────────┐
-            │  onStop()   │  ◄── Dừng các tác vụ nặng
-            └──────┬──────┘
-                   │ Người dùng quay lại      │ Bị destroy
-                   ▼                          ▼
-            ┌─────────────┐          ┌──────────────┐
-            │ onRestart() │          │ onDestroy()  │ ◄── Giải phóng tài nguyên
-            └──────┬──────┘          └──────────────┘
-                   │
-                   ▼
-               onStart()
+    A[Người dùng mở App]
+
+    B["onCreate()<br/>◄── Khởi tạo UI, load data lần đầu"]
+
+    C["onStart()<br/>◄── Activity trở nên visible"]
+
+    D["onResume()<br/>◄── Activity ở foreground, nhận input"]
+
+    E["App đang chạy"]
+
+    F["onPause()<br/>◄── Lưu trạng thái tạm thời"]
+
+    G["onStop()<br/>◄── Dừng các tác vụ nặng"]
+
+    H["onRestart()"]
+
+    I["onDestroy()<br/>◄── Giải phóng tài nguyên"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+
+    E -->|Bị che khuất / Chuyển app| F
+    F --> G
+
+    G -->|Người dùng quay lại| H
+    H --> C
+
+    G -->|Bị destroy| I
 ```
 
 **Tại sao Android Studio tự sinh sẵn `onCreate()`?**
