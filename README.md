@@ -1,10 +1,8 @@
-# 📱 Android Apps – Lập Trình Di Động
+# 📱 Android Apps – PHÁT TRIỂN ỨNG DỤNG TRÊN THIẾT BỊ DI ĐỘNG - TEE0419
 
-> **Sinh viên:** [Họ và Tên]  
+> **Sinh viên:** Nguyễn Như Khiêm 
 > **MSSV:** [Mã số sinh viên]  
-> **Môn học:** Lập Trình Ứng Dụng Di Động  
-> **Giảng viên:** [Tên giảng viên]  
-> **Năm học:** 2024 – 2025
+> **Môn học:** PHÁT TRIỂN ỨNG DỤNG TRÊN THIẾT BỊ DI ĐỘNG - TEE0419
 
 ---
 
@@ -1331,7 +1329,7 @@ git clone https://github.com/[username]/android-k58-[masv].git
 ## Cấu Trúc Repository
 
 ```
-android-k58-[masv]/
+App-AndroidStudio/
 │
 ├── README.md             
 │
