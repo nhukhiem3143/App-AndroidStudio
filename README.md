@@ -1131,11 +1131,10 @@ dependencies {
     <string name="app_name">Giải Toán API</string>
 
     <!-- About Activity -->
-    <string name="about_title">Về Ứng Dụng</string>
+    <string name="about_title">About me</string>
     <string name="about_description">Ứng dụng minh hoạ 3 Activity:\n• Giải phương trình bậc 2\n• Gửi kết quả lên API\n• Xem kết quả qua WebView</string>
     <string name="btn_go_giai_toan">🧮 Đến Giải Toán</string>
     <string name="btn_go_webview">🌐 Xem Web</string>
-    <string name="author_label">Sinh viên: [Họ tên] – [MSSV]</string>
 
     <!-- GiaiToan Activity -->
     <string name="giai_toan_title">Giải PT Bậc 2: ax² + bx + c = 0</string>
@@ -1173,7 +1172,7 @@ dependencies {
     <color name="success_green">#2E7D32</color>
     <color name="error_red">#C62828</color>
     <color name="divider">#E0E0E0</color>
-</resources>
+</resources>**
 ```
 <img width="1587" height="948" alt="image" src="https://github.com/user-attachments/assets/0a04601e-1551-435c-9e1a-da23db90d80e" />
 
@@ -1189,7 +1188,7 @@ Ta đã có `AboutActivity` (đổi tên từ MainActivity). Cần tạo thêm 2
 Chuột phải vào package gốc (com.example.giaitoanapi)
 → New → Activity → Empty Views Activity
 → Activity Name: GiaiToanActivity
-→ Layout Name: activity_giai_toan   (tự điền)
+→ Layout Name: activity_giai_toan  
 → Launcher Activity: ☐ BỎ CHỌN (không phải màn hình chính)
 → Finish
 ```
@@ -1352,7 +1351,7 @@ Hoặc: Shift + F10
 ```
 <img width="372" height="579" alt="image" src="https://github.com/user-attachments/assets/8b5232bc-d227-4afe-bf21-ab52f9eab03d" />
 
-
+<img width="641" height="878" alt="image" src="https://github.com/user-attachments/assets/8a36bd4f-358e-436f-a255-be1105bb7eb8" />
 
 **Test Activity 3 – WebView:**
 ```
@@ -1362,16 +1361,7 @@ Hoặc: Shift + F10
 ☐ Nút Back thiết bị: nếu đã điều hướng trong web → goBack()
 ☐ Nút Back trên ActionBar → về AboutActivity
 ```
-
-
-
-### 10.4 Kiểm tra API bằng Log
-
-Mở **Logcat** trong Android Studio (Alt+6) để xem log:
-
-```
-Filter: tag = "API" hoặc search "GiaiToan"
-```
+<img width="525" height="841" alt="image" src="https://github.com/user-attachments/assets/23bf6ae1-86ee-4836-b12f-42d45e619d1b" />
 
 ---
 
