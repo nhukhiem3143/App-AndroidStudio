@@ -1,7 +1,7 @@
 # 📱 Android Apps – PHÁT TRIỂN ỨNG DỤNG TRÊN THIẾT BỊ DI ĐỘNG - TEE0419
 
-> **Sinh viên:** Nguyễn Như Khiêm 
-> **MSSV:** [Mã số sinh viên]  
+> **Sinh viên:** Nguyễn Như Khiêm  
+> **MSSV:** K225480106030   
 > **Môn học:** PHÁT TRIỂN ỨNG DỤNG TRÊN THIẾT BỊ DI ĐỘNG - TEE0419
 
 ---
@@ -21,9 +21,6 @@
   - [Thư Mục Assets](#9-thư-mục-assets)
 - [App 1 – Ẩm Thực Việt Nam](#app-1--ẩm-thực-việt-nam)
 - [App 2 – Giải Toán & API](#app-2--giải-toán--api)
-- [Hướng Dẫn Cài Đặt & Chạy](#hướng-dẫn-cài-đặt--chạy)
-- [Cấu Trúc Repository](#cấu-trúc-repository)
-
 ---
 
 ## Tổng Quan
@@ -603,10 +600,9 @@ try {
 
 ---
 
-## 🍜 App 1 – Ẩm Thực Việt Nam
+## App 1 – Ẩm Thực Việt Nam
 
 > Ứng dụng giới thiệu các món ăn đặc trưng 3 miền Việt Nam sử dụng dữ liệu chuẩn bị sẵn trong Assets (hoạt động offline hoàn toàn).
-
 
 ### Tổng Quan
 
@@ -1392,8 +1388,6 @@ Chuột phải vào MainActivity.java → Refactor → Rename
 <img width="1424" height="900" alt="image" src="https://github.com/user-attachments/assets/b2100f0e-4416-488a-a956-587acac441ae" />
 
 > Android Studio tự cập nhật tất cả chỗ tham chiếu, kể cả trong `AndroidManifest.xml`
-
-
 
 ---
 
