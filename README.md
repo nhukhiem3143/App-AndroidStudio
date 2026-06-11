@@ -1356,12 +1356,12 @@ Hoặc: Shift + F10
 **Test Activity 3 – WebView:**
 ```
 ☐ Trang web load được (cần có Internet)
-☐ URL hiển thị đúng: https://k58kmt.tdh.io.vn?masv=MSSV_CỦA_BẠN
+☐ URL hiển thị đúng: https://k58kmt.tdh.io.vn?masv=k225480106030
 ☐ ProgressBar hiện khi đang load, ẩn khi xong
 ☐ Nút Back thiết bị: nếu đã điều hướng trong web → goBack()
 ☐ Nút Back trên ActionBar → về AboutActivity
 ```
-<img width="525" height="841" alt="image" src="https://github.com/user-attachments/assets/23bf6ae1-86ee-4836-b12f-42d45e619d1b" />
+<img width="720" height="1445" alt="6d16b0e48524047a5d35" src="https://github.com/user-attachments/assets/dec85def-c9ed-4c08-a344-785e0a437cef" />
 
 ---
 
